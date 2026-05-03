@@ -1,0 +1,14 @@
+.claude
+steps.md
+steps_copy.md
+server/node_modules
+
+
+# env files
+.env
+
+# logs
+*.log
+
+# OS files
+.DS_Store
