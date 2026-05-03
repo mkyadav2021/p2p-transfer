@@ -2,6 +2,12 @@
 //Node.js
 
 const { WebSocketServer } = require("ws");
+const crypto = require("crypto");
+
+function hashPassword(password) {
+  if (!password) return null;
+  return crypto.createHash("sha256").update(password).digest("hex");
+}
 
 const PORT = process.env.PORT || 8080;
 const wss = new WebSocketServer({ port: PORT });
@@ -41,12 +47,12 @@ wss.on("connection", (ws) => {
           roomId = generateRoomId();
         } while (rooms.has(roomId));
 
-        rooms.set(roomId, { sender: ws, receiver: null });
+        rooms.set(roomId, { sender: ws, receiver: null, passwordHash: hashPassword(msg.password) });
         ws.roomId = roomId;
         ws.role = "sender";
 
         send(ws, { type: "room-created", roomId });
-        console.log(`Room created: ${roomId}`);
+        console.log(`Room created: ${roomId}${msg.password ? " (password protected)" : ""}`);
         break;
       }
 
@@ -59,6 +65,10 @@ wss.on("connection", (ws) => {
         }
         if (room.receiver) {
           send(ws, { type: "error", message: "Room is full" });
+          return;
+        }
+        if (room.passwordHash && hashPassword(msg.password) !== room.passwordHash) {
+          send(ws, { type: "error", message: "Wrong password" });
           return;
         }
 

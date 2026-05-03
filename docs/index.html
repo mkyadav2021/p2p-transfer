@@ -39,6 +39,10 @@
             <p id="room-id-display" class="receiver-room-id"></p>
           </div>
         </div>
+        <div class="join-form">
+          <input type="password" id="join-password" placeholder="Password (leave blank if none)" autocomplete="current-password" />
+          <button id="join-btn">Join</button>
+        </div>
       </div>
 
       <!-- Both: file info (sender = picked file, receiver = incoming file) -->
@@ -50,6 +54,15 @@
         <div class="info-row">
           <span class="info-label">Size</span>
           <span id="file-size"></span>
+        </div>
+      </div>
+
+      <!-- Sender: optional password + create room button -->
+      <div id="password-section" hidden>
+        <label for="room-password">Password <span class="optional">(optional)</span></label>
+        <div class="input-row">
+          <input type="password" id="room-password" placeholder="Leave blank for no password" autocomplete="new-password" />
+          <button id="create-btn">Create Room</button>
         </div>
       </div>
 

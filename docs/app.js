@@ -26,8 +26,13 @@ let remoteDescSet = false;
 // ─── DOM refs ─────────────────────────────────────────────────────────────
 const dropZone        = document.getElementById("drop-zone");
 const fileInput       = document.getElementById("file-input");
+const passwordSection = document.getElementById("password-section");
+const roomPasswordEl  = document.getElementById("room-password");
+const createBtn       = document.getElementById("create-btn");
 const receiverView    = document.getElementById("receiver-view");
 const roomIdDisplay   = document.getElementById("room-id-display");
+const joinPasswordEl  = document.getElementById("join-password");
+const joinBtn         = document.getElementById("join-btn");
 const fileInfo        = document.getElementById("file-info");
 const fileNameEl      = document.getElementById("file-name");
 const fileSizeEl      = document.getElementById("file-size");
@@ -136,6 +141,13 @@ function initSender() {
       setTimeout(() => (copyBtn.textContent = "Copy"), 2000);
     });
   });
+
+  createBtn.addEventListener("click", () => {
+    createBtn.disabled = true;
+    createBtn.textContent = "Creating...";
+    setStatus("Connecting to server...");
+    connectSender();
+  });
 }
 
 function onFileSelected(file) {
@@ -143,16 +155,21 @@ function onFileSelected(file) {
   fileNameEl.textContent = file.name;
   fileSizeEl.textContent = formatSize(file.size);
   fileInfo.hidden = false;
-  setStatus("Connecting to server...");
-  connectSender();
+  passwordSection.hidden = false;
+  setStatus("Set a password (optional) then create the room.");
 }
 
 function connectSender() {
+  const password = roomPasswordEl.value;
   ws = new WebSocket(WS_URL);
-  ws.addEventListener("open", () => ws.send(JSON.stringify({ type: "create-room" })));
+  ws.addEventListener("open", () => ws.send(JSON.stringify({ type: "create-room", password })));
   ws.addEventListener("message", (e) => handleSenderMessage(JSON.parse(e.data)));
   ws.addEventListener("close", () => setStatus("Disconnected from server.", true));
-  ws.addEventListener("error", () => setStatus("Connection error — is the server running?", true));
+  ws.addEventListener("error", () => {
+    setStatus("Connection error — is the server running?", true);
+    createBtn.disabled = false;
+    createBtn.textContent = "Create Room";
+  });
 }
 
 function handleSenderMessage(msg) {
@@ -261,19 +278,29 @@ function initReceiver(roomId) {
   dropZone.hidden = true;
   receiverView.hidden = false;
   roomIdDisplay.textContent = roomId;
-  setStatus("Connecting to server...");
-  connectReceiver(roomId);
+  setStatus("Enter password if required, then click Join.");
+
+  joinBtn.addEventListener("click", () => {
+    joinBtn.disabled = true;
+    joinBtn.textContent = "Joining...";
+    connectReceiver(roomId);
+  });
 }
 
 function connectReceiver(roomId) {
+  const password = joinPasswordEl.value;
   ws = new WebSocket(WS_URL);
   ws.addEventListener("open", () => {
-    ws.send(JSON.stringify({ type: "join-room", roomId }));
+    ws.send(JSON.stringify({ type: "join-room", roomId, password }));
     setStatus("Joining room...");
   });
   ws.addEventListener("message", (e) => handleReceiverMessage(JSON.parse(e.data)));
   ws.addEventListener("close", () => setStatus("Disconnected from server.", true));
-  ws.addEventListener("error", () => setStatus("Connection error — is the server running?", true));
+  ws.addEventListener("error", () => {
+    setStatus("Connection error — is the server running?", true);
+    joinBtn.disabled = false;
+    joinBtn.textContent = "Join";
+  });
 }
 
 function handleReceiverMessage(msg) {
@@ -295,12 +322,15 @@ function handleReceiverMessage(msg) {
   }
 
   if (msg.type === "error") {
-    setStatus(
-      msg.message === "Room not found"
-        ? "This link has expired or the room does not exist."
-        : msg.message,
-      true
-    );
+    if (msg.message === "Wrong password") {
+      setStatus("Wrong password — try again.", true);
+      joinBtn.disabled = false;
+      joinBtn.textContent = "Join";
+    } else if (msg.message === "Room not found") {
+      setStatus("This link has expired or the room does not exist.", true);
+    } else {
+      setStatus(msg.message, true);
+    }
   }
 }
 
