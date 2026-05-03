@@ -1,6 +1,6 @@
 const WS_URL = location.hostname === "localhost"
   ? "ws://localhost:8080"
-  : "wss://YOUR_APP_NAME.onrender.com"; // replace after Render deploy
+  : "https://p2p-transfer-zh77.onrender.com"; // replace after Render deploy
 const PC_CONFIG = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 const CHUNK_SIZE = 64 * 1024;        // 64 KB per chunk
 const BUFFER_THRESHOLD = 2 * 1024 * 1024; // pause sending when DC buffer exceeds 2 MB
