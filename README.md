@@ -1,6 +1,5 @@
 # P2P File Transfer
-
-A browser-based peer-to-peer file transfer app. Files travel directly between two browsers — no file ever touches a server.
+Ever confused how to transfer large files, sometimes small files as well, when you don't have a pendrive. And, please stop using social media to transfer files, that's hugely inefficient. We have a solution for this problem, P2P. It's a browser-based peer-to-peer file transfer app. Files travel directly between two browsers — and yes, if you are worried about security, please note that no file ever touches a server.
 
 **Live demo:** https://mkyadav2021.github.io/p2p-transfer
 
@@ -93,23 +92,6 @@ p2p-transfer/
 
 ---
 
-## Architecture notes
-
-**Signaling server** (`server/index.js`) — handles only connection setup:
-- `create-room` — generates a room ID, stores `sha256(password)` if provided
-- `join-room` — verifies password hash, admits receiver, notifies sender
-- Forwards `sdp-offer`, `sdp-answer`, and `ice-candidate` messages between peers
-- Cleans up rooms when either peer disconnects
-- Ping/pong heartbeat every 30s to keep connections alive on free hosting
-
-**Frontend** (`docs/app.js`) — all WebRTC and file transfer logic:
-- Detects sender vs. receiver mode from the URL hash (`#ROOMID`)
-- Sender creates an `RTCDataChannel`, generates an SDP offer, sends file metadata then the file in 64 KB chunks
-- Backpressure via `bufferedAmountLowThreshold` prevents memory blowup on large files
-- Receiver collects chunks into an array, assembles a `Blob` on completion, triggers download via `URL.createObjectURL`
-- ICE candidates are queued client-side until `setRemoteDescription` completes to avoid race conditions
-
----
 
 ## Deploying your own instance
 
