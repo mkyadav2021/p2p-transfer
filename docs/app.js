@@ -5,7 +5,7 @@ const PC_CONFIG = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 const CHUNK_SIZE = 64 * 1024;        // 64 KB per chunk
 const BUFFER_THRESHOLD = 2 * 1024 * 1024; // pause sending when DC buffer exceeds 2 MB
 
-// ─── State ────────────────────────────────────────────────────────────────
+// State
 let ws = null;
 let pc = null;
 let dataChannel = null;
@@ -23,7 +23,7 @@ let transferStartTime = null;
 let pendingCandidates = [];
 let remoteDescSet = false;
 
-// ─── DOM refs ─────────────────────────────────────────────────────────────
+// DOM refs
 const dropZone        = document.getElementById("drop-zone");
 const fileInput       = document.getElementById("file-input");
 const passwordSection = document.getElementById("password-section");
@@ -48,7 +48,7 @@ const downloadSection = document.getElementById("download-section");
 const downloadBtn     = document.getElementById("download-btn");
 const statusEl        = document.getElementById("status");
 
-// ─── Utilities ────────────────────────────────────────────────────────────
+// Utilities
 function formatSize(bytes) {
   if (bytes < 1024)        return bytes + " B";
   if (bytes < 1024 ** 2)   return (bytes / 1024).toFixed(1) + " KB";
@@ -73,7 +73,7 @@ function updateSpeed(bytesDone) {
   transferSpeedEl.textContent = formatSize(bytesDone / elapsed) + "/s";
 }
 
-// ─── WebRTC shared ────────────────────────────────────────────────────────
+// WebRTC shared
 function createPeerConnection() {
   pc = new RTCPeerConnection(PC_CONFIG);
 
@@ -114,7 +114,7 @@ async function flushPendingCandidates() {
   pendingCandidates = [];
 }
 
-// ─── Sender ───────────────────────────────────────────────────────────────
+// Sender
 function initSender() {
   dropZone.addEventListener("dragover", (e) => {
     e.preventDefault();
@@ -273,7 +273,7 @@ function generateQR(url) {
   });
 }
 
-// ─── Receiver ─────────────────────────────────────────────────────────────
+// Receiver 
 function initReceiver(roomId) {
   dropZone.hidden = true;
   receiverView.hidden = false;
@@ -395,7 +395,7 @@ function finishDownload() {
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
-// ─── Boot ─────────────────────────────────────────────────────────────────
+// Boot 
 const roomId = window.location.hash.slice(1); // strip leading #
 if (roomId) {
   initReceiver(roomId);
