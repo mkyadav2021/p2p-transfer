@@ -162,11 +162,21 @@ function onFileSelected(file) {
 function connectSender() {
   const password = roomPasswordEl.value;
   ws = new WebSocket(WS_URL);
-  ws.addEventListener("open", () => ws.send(JSON.stringify({ type: "create-room", password })));
+
+  const wakeupTimer = setTimeout(
+    () => setStatus("Server is waking up — this can take up to 30 seconds on first connect..."),
+    4000
+  );
+
+  ws.addEventListener("open", () => {
+    clearTimeout(wakeupTimer);
+    ws.send(JSON.stringify({ type: "create-room", password }));
+  });
   ws.addEventListener("message", (e) => handleSenderMessage(JSON.parse(e.data)));
   ws.addEventListener("close", () => setStatus("Disconnected from server.", true));
   ws.addEventListener("error", () => {
-    setStatus("Connection error — is the server running?", true);
+    clearTimeout(wakeupTimer);
+    setStatus("Connection error — the server may be waking up, please wait 30 seconds and try again.", true);
     createBtn.disabled = false;
     createBtn.textContent = "Create Room";
   });
@@ -290,14 +300,22 @@ function initReceiver(roomId) {
 function connectReceiver(roomId) {
   const password = joinPasswordEl.value;
   ws = new WebSocket(WS_URL);
+
+  const wakeupTimer = setTimeout(
+    () => setStatus("Server is waking up — this can take up to 30 seconds on first connect..."),
+    4000
+  );
+
   ws.addEventListener("open", () => {
+    clearTimeout(wakeupTimer);
     ws.send(JSON.stringify({ type: "join-room", roomId, password }));
     setStatus("Joining room...");
   });
   ws.addEventListener("message", (e) => handleReceiverMessage(JSON.parse(e.data)));
   ws.addEventListener("close", () => setStatus("Disconnected from server.", true));
   ws.addEventListener("error", () => {
-    setStatus("Connection error — is the server running?", true);
+    clearTimeout(wakeupTimer);
+    setStatus("Connection error — the server may be waking up, please wait 30 seconds and try again.", true);
     joinBtn.disabled = false;
     joinBtn.textContent = "Join";
   });
