@@ -1,6 +1,3 @@
-//okay buddy, this journey will teach me alot. this is the starting point of my journey!.
-//Node.js
-
 const { WebSocketServer } = require("ws");
 const crypto = require("crypto");
 
